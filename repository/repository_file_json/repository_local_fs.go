@@ -1,16 +1,20 @@
 package repositoryfile
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/akhilbidhuri/TaskMaster/consts"
 	"github.com/akhilbidhuri/TaskMaster/models"
-	"github.com/akhilbidhuri/TaskMaster/repository"
+	"github.com/google/uuid"
 )
 
-const storePath = "tm_data.json"
+const storePath = "tm_data.ndjson"
 
 var basePath = filepath.Clean("../store")
 
@@ -22,12 +26,11 @@ func exitOnIssue(msg interface{}) {
 }
 
 type FileStore struct {
-	f *os.File
+	F *os.File
 }
 
 // if dir and file store not present create
 func init() {
-	log.Println("init repo")
 	entries, err := os.ReadDir(filepath.Clean("../"))
 	if err != nil {
 		exitOnIssue(fmt.Errorf("Failed to read the base path:%s! %w\n", basePath, err))
@@ -51,42 +54,57 @@ func init() {
 			}
 		}
 	}
-	log.Println(foundDir, foundFile)
 	if !foundDir {
 		if err := os.Mkdir(basePath, 0755); err != nil {
 			exitOnIssue(fmt.Errorf("failed to create store!%w\n", err))
 		}
 	}
 	if !foundFile {
-		if _, err := os.Create(fileStorePath); err != nil {
+		if f, err := os.Create(fileStorePath); err != nil {
 			exitOnIssue(fmt.Errorf("failed to create store!%w\n", err))
+		} else {
+			defer f.Close()
 		}
 	}
 }
 
-func GetNewFileStore() repository.RepositoryI {
+func GetNewFileStore() *FileStore {
 	fh, err := os.OpenFile(fileStorePath, os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatal("Failed to open the file store!")
 		os.Exit(0)
 	}
 	return &FileStore{
-		f: fh,
+		F: fh,
 	}
 }
 
 func (fs *FileStore) GetToDoTasks() []models.Task {
 	return []models.Task{}
 }
+
 func (fs *FileStore) GetAllTasks() []models.Task {
 	return []models.Task{}
 }
-func (fs *FileStore) AddTask(*models.Task) *models.Task {
-	return &models.Task{}
+
+func (fs *FileStore) AddTask(task *models.Task) *models.Task {
+	task.ID = uuid.NewString()
+	task.Status = consts.PENDING
+	task.Created_At = time.Now()
+	fs.F.Seek(0, io.SeekEnd)
+	if taskJson, err := json.Marshal(task); err != nil {
+		log.Fatal("Failed to store the task!", err)
+		return nil
+	} else {
+		fs.F.Write(append(taskJson, byte('\n')))
+	}
+	return task
 }
+
 func (fs *FileStore) RemoveTask(id string) bool {
 	return true
 }
+
 func (fs *FileStore) ModifyTask(*models.Task) *models.Task {
 	return &models.Task{}
 }

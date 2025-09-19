@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
+	"log"
 
-	"github.com/akhilbidhuri/TaskMaster/consts"
 	"github.com/akhilbidhuri/TaskMaster/controller"
 	repositoryfile "github.com/akhilbidhuri/TaskMaster/repository/repository_file_json"
 )
@@ -15,12 +14,10 @@ func main() {
 	//  -a list all tasks with status
 	// -new add new task
 	// -rm remove task
-	defer consts.PrintOpsonRecover()
 
-	if len(os.Args) < 2 {
-		panic(consts.No_Params)
-	}
 	fsRepo := repositoryfile.GetNewFileStore()
-	cmdController := controller.GetController(&fsRepo)
+	defer fsRepo.F.Close()
+	cmdController := controller.GetController(fsRepo)
+	log.Println("calling req handler")
 	cmdController.HandleRequest()
 }

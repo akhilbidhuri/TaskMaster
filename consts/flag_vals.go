@@ -1,9 +1,11 @@
 package consts
 
+import "flag"
+
 var (
-	List     bool
+	List     *flag.FlagSet
 	All      bool
-	Add      bool
+	Add      *flag.FlagSet
 	Remove   string
 	Update   string
 	Title    string
