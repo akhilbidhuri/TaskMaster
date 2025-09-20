@@ -9,3 +9,9 @@ type RepositoryI interface {
 	RemoveTask(id string) bool
 	ModifyTask(*models.Task) *models.Task
 }
+
+type Index interface {
+	Add(string) error
+	Remove(string) error
+	Find(string) (int64, error)
+}
