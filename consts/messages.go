@@ -22,6 +22,6 @@ func PrintOpsonRecover() {
 	if r := recover(); r != nil {
 		Red.Fprintln(Output, fmt.Sprint(r))
 		BlueBold.Fprintln(Output, ManStr)
+		os.Exit(0)
 	}
-	os.Exit(0)
 }
