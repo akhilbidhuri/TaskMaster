@@ -18,6 +18,7 @@ func init() {
 	consts.Add.StringVar(&consts.Title, consts.TITLE, "", "title of the task - for update and create operations")
 	consts.Add.StringVar(&consts.Desc, consts.DESC, "", "description of the task - for update and create operations")
 	consts.Add.StringVar(&consts.Res, consts.RESOURCES, "", "resources of the task - for uspdate and create operations")
+	consts.List.BoolVar(&consts.All, consts.ALL, false, "list all tasks")
 	defer consts.PrintOpsonRecover()
 
 	if len(os.Args) < 2 {

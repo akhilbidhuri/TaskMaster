@@ -22,11 +22,21 @@ func GetController(repoDep repository.RepositoryI) *Controller {
 }
 
 func (c *Controller) HandleRequest() {
-	log.Println("came here")
-	fmt.Println("args1: ", os.Args[1])
 	switch strings.Replace(os.Args[1], "-", "", 1) {
 	case consts.LIST:
 		consts.List.Parse(os.Args[2:])
+		var tasks []models.Task
+		if consts.All {
+			tasks = (*c.repo).GetAllTasks()
+		} else {
+			tasks = (*c.repo).GetToDoTasks()
+		}
+		if len(tasks) == 0 {
+			log.Fatalln("NO tasks present!")
+		}
+		for _, task := range tasks {
+			fmt.Print(task)
+		}
 	case consts.NEW:
 		consts.Add.Parse(os.Args[2:])
 		if consts.Title == "" || consts.Desc == "" {

@@ -4,5 +4,5 @@ type T_Status string
 
 const (
 	DONE    T_Status = "done"
-	PENDING T_Status = "pending"
+	PENDING T_Status = "todo"
 )

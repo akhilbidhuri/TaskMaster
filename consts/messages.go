@@ -11,7 +11,7 @@ const (
 	ManStr Message = `operations:
 
 	-l list tasks to be done
-	-a list all tasks with status
+		-a list all tasks with status
 	-new add new task
 	-rm remove task`
 	Wrong_Params Message = `Invalid params!`

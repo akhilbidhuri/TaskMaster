@@ -11,7 +11,7 @@ type RepositoryI interface {
 }
 
 type Index interface {
-	Add(string) error
+	Add(string, int64) error
 	Remove(string) error
 	Find(string) (int64, error)
 }

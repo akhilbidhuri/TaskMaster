@@ -122,24 +122,46 @@ func GetNewFileStore() *FileStore {
 }
 
 func (fs *FileStore) GetToDoTasks() []models.Task {
-	return []models.Task{}
+	var tasks = make([]models.Task, 0)
+	defer seekStart(fs.F)
+	reader := bufio.NewScanner(fs.F)
+	for reader.Scan() {
+		taskMarshalled := reader.Bytes()
+		var task models.Task
+		json.Unmarshal([]byte(taskMarshalled), &task)
+		if task.Status == consts.PENDING {
+			tasks = append(tasks, task)
+		}
+	}
+	return tasks
 }
 
 func (fs *FileStore) GetAllTasks() []models.Task {
-	return []models.Task{}
+	var tasks = make([]models.Task, 0)
+	defer seekStart(fs.F)
+	reader := bufio.NewScanner(fs.F)
+	for reader.Scan() {
+		taskMarshalled := reader.Bytes()
+		var task models.Task
+		json.Unmarshal([]byte(taskMarshalled), &task)
+		tasks = append(tasks, task)
+	}
+	return tasks
 }
 
 func (fs *FileStore) AddTask(task *models.Task) *models.Task {
 	task.ID = uuid.NewString()
 	task.Status = consts.PENDING
 	task.Created_At = time.Now()
-	fs.F.Seek(0, io.SeekEnd)
+	offset, _ := fs.F.Seek(0, io.SeekEnd)
+	defer seekStart(fs.F)
 	if taskJson, err := json.Marshal(task); err != nil {
 		log.Fatal("Failed to store the task!", err)
 		return nil
 	} else {
 		fs.F.Write(append(taskJson, byte('\n')))
 	}
+	fs.index.Add(task.ID, offset)
 	return task
 }
 
@@ -149,4 +171,8 @@ func (fs *FileStore) RemoveTask(id string) bool {
 
 func (fs *FileStore) ModifyTask(*models.Task) *models.Task {
 	return &models.Task{}
+}
+
+func seekStart(f *os.File) {
+	f.Seek(0, io.SeekStart)
 }

@@ -29,7 +29,12 @@ func getNdJSONINdex(indexPath string) (*NdJsonIndex, error) {
 	return nil, errors.New("could not get index")
 }
 
-func (i *NdJsonIndex) Add(id string) error {
+func (i *NdJsonIndex) Add(id string, offset int64) error {
+	i.Index[id] = offset
+	i.f.Seek(0, 0)
+	i.f.Truncate(0)
+	defer seekStart(i.f)
+	json.NewEncoder(i.f).Encode(i)
 	return nil
 }
 
