@@ -39,11 +39,23 @@ func (i *NdJsonIndex) Add(id string, offset int64) error {
 }
 
 func (i *NdJsonIndex) Remove(id string) error {
+	if _, err := i.Find(id); err != nil {
+		return errors.New("task is not Present!")
+	}
+	delete(i.Index, id)
+	i.f.Seek(0, 0)
+	i.f.Truncate(0)
+	defer seekStart(i.f)
+	json.NewEncoder(i.f).Encode(i)
 	return nil
 }
 
 func (i *NdJsonIndex) Find(id string) (int64, error) {
-	return 0, nil
+	offest, ok := i.Index[id]
+	if !ok {
+		return -1, errors.New("task not present!")
+	}
+	return offest, nil
 }
 
 func construcIndexFromStore(f *os.File) map[string]int64 {

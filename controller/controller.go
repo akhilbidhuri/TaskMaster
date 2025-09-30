@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -42,19 +43,40 @@ func (c *Controller) HandleRequest() {
 		if consts.Title == "" || consts.Desc == "" {
 			panic("title and description are required for creating task!")
 		}
-		res := make([]string, 0, 5)
-		if consts.Res != "" {
-			splitRes := strings.Split(consts.Res, ",")
-			for _, r := range splitRes {
-				res = append(res, strings.TrimSpace(r))
-			}
-		}
+		res := getResourceSlice(consts.Res)
 		task := &models.Task{
 			Title: consts.Title,
 			Desc:  consts.Desc,
 			Res:   res,
 		}
 		(*c.repo).AddTask(task)
+	case consts.MODIFY:
+		flag.Parse()
+		id := consts.Update
+		if !(*c.repo).TaskExists(id) {
+			log.Fatal("Task dosen't exit!")
+		}
+		if consts.Desc == "" && consts.Title == "" && consts.Res == "" {
+			log.Fatal("either title, desc or resources are required as parameter to update command.")
+		}
+		task := &models.Task{
+			ID:    id,
+			Title: consts.Title,
+			Desc:  consts.Desc,
+			Res:   getResourceSlice(consts.Res),
+		}
+		(*c.repo).ModifyTask(task)
 	default:
 	}
+}
+
+func getResourceSlice(res string) []string {
+	resList := make([]string, 0)
+	if consts.Res != "" {
+		splitRes := strings.Split(consts.Res, ",")
+		for _, r := range splitRes {
+			resList = append(resList, strings.TrimSpace(r))
+		}
+	}
+	return resList
 }

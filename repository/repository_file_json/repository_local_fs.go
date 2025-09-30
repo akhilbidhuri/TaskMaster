@@ -173,6 +173,13 @@ func (fs *FileStore) ModifyTask(*models.Task) *models.Task {
 	return &models.Task{}
 }
 
+func (fs *FileStore) TaskExists(id string) bool {
+	if _, err := fs.index.Find(id); err != nil {
+		return false
+	}
+	return true
+}
+
 func seekStart(f *os.File) {
 	f.Seek(0, io.SeekStart)
 }
