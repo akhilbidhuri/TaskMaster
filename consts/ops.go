@@ -10,4 +10,5 @@ const (
 	RESOURCES string = "res"
 	MARK_DONE string = "done"
 	MODIFY    string = "mod"
+	CLEAN     string = "clean"
 )

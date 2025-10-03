@@ -12,4 +12,5 @@ var (
 	Desc     string
 	Res      string
 	MarkDone string
+	Clean    *flag.FlagSet
 )
