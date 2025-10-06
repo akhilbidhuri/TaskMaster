@@ -8,6 +8,7 @@ type RepositoryI interface {
 	AddTask(*models.Task) *models.Task
 	RemoveTask(id string) bool
 	ModifyTask(*models.Task) *models.Task
+	MarkTaskDone(id string) bool
 	TaskExists(id string) bool
 }
 

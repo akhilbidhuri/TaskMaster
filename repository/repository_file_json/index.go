@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"os"
 
@@ -16,7 +17,7 @@ type NdJsonIndex struct {
 }
 
 func getNdJSONINdex(indexPath string) (*NdJsonIndex, error) {
-	if indexF, err := os.Open(indexPath); err != nil {
+	if indexF, err := os.OpenFile(indexPath, os.O_RDWR, 0666); err != nil {
 		log.Fatal("unable to get index file, ", err)
 	} else {
 		var index NdJsonIndex
@@ -31,10 +32,12 @@ func getNdJSONINdex(indexPath string) (*NdJsonIndex, error) {
 
 func (i *NdJsonIndex) Add(id string, offset int64) error {
 	i.Index[id] = offset
-	i.f.Seek(0, 0)
+	i.f.Seek(0, io.SeekStart)
 	i.f.Truncate(0)
 	defer seekStart(i.f)
-	json.NewEncoder(i.f).Encode(i)
+	if err := json.NewEncoder(i.f).Encode(i); err != nil {
+		return err
+	}
 	return nil
 }
 

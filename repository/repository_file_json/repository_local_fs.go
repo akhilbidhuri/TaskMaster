@@ -188,7 +188,9 @@ func (fs *FileStore) AddTask(task *models.Task) *models.Task {
 	} else {
 		fs.F.Write(append(taskJson, byte('\n')))
 	}
-	fs.index.Add(task.ID, offset)
+	if err := fs.index.Add(task.ID, offset); err != nil {
+		log.Fatal("Failed to add task to index!, ", err)
+	}
 	return task
 }
 
@@ -226,6 +228,25 @@ func (fs *FileStore) TaskExists(id string) bool {
 	if _, err := fs.index.Find(id); err != nil {
 		return false
 	}
+	return true
+}
+
+func (fs *FileStore) MarkTaskDone(id string) bool {
+	offset, err := fs.index.Find(id)
+	if err != nil {
+		log.Fatal("Task dosen't exit!")
+	}
+	fs.F.Seek(offset, io.SeekStart)
+	var task models.Task
+	if err := json.NewDecoder(fs.F).Decode(&task); err != nil {
+		log.Fatal("Failed to decode the task from store!, ", err)
+	}
+	task.Status = consts.DONE
+	fs.F.Seek(offset, io.SeekStart)
+	if err := json.NewEncoder(fs.F).Encode(&task); err != nil {
+		log.Fatal("Failed to encode the task to store!, ", err)
+	}
+	log.Println("Marked task as done!", task.ID, task.Title)
 	return true
 }
 

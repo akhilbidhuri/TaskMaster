@@ -66,6 +66,13 @@ func (c *Controller) HandleRequest() {
 			Res:   getResourceSlice(consts.Res),
 		}
 		(*c.repo).ModifyTask(task)
+	case consts.MARK_DONE:
+		flag.Parse()
+		id := consts.MarkDone
+		if !(*c.repo).TaskExists(id) {
+			log.Fatal("Task dosen't exit!")
+		}
+		(*c.repo).MarkTaskDone(id)
 	default:
 	}
 }
