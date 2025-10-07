@@ -191,6 +191,7 @@ func (fs *FileStore) AddTask(task *models.Task) *models.Task {
 	if err := fs.index.Add(task.ID, offset); err != nil {
 		log.Fatal("Failed to add task to index!, ", err)
 	}
+	log.Println("Added task successfully:", task.ID, task.Title)
 	return task
 }
 

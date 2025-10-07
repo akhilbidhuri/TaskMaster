@@ -43,9 +43,10 @@ func (idsq *IDSequenceGenerator) GetNextID() (string, error) {
 	seq.Current++
 	idsq.seqFile.Seek(0, 0)
 	idsq.seqFile.Truncate(0)
-	defer idsq.seqFile.Sync()
+	idsq.seqFile.Sync()
 	if err := json.NewEncoder(idsq.seqFile).Encode(seq); err != nil {
 		return "", err
 	}
+	idsq.seqFile.Sync()
 	return strconv.Itoa(id), nil
 }
