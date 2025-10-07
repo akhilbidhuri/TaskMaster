@@ -3,17 +3,33 @@ package repositoryfile
 import (
 	"bufio"
 	"encoding/json"
+	"path/filepath"
+
 	"errors"
 	"io"
 	"log"
 	"os"
 
+	"github.com/akhilbidhuri/TaskMaster/consts"
 	"github.com/akhilbidhuri/TaskMaster/models"
 )
 
 type NdJsonIndex struct {
 	Index map[string]int64 `json:"index"`
 	f     *os.File         `json:"-"`
+}
+
+func getTempNdJSONIndex(indexPath string) *NdJsonIndex {
+	var indexF *os.File
+	var err error
+	if indexF, err = os.OpenFile(indexPath, os.O_RDWR|os.O_CREATE, 0666); err != nil {
+		log.Fatal("failed to create index file", err)
+	}
+	index := make(map[string]int64)
+	return &NdJsonIndex{
+		Index: index,
+		f:     indexF,
+	}
 }
 
 func getNdJSONINdex(indexPath string) (*NdJsonIndex, error) {
@@ -59,6 +75,13 @@ func (i *NdJsonIndex) Find(id string) (int64, error) {
 		return -1, errors.New("task not present!")
 	}
 	return offest, nil
+}
+
+// used by temp index to move to main index
+func (i *NdJsonIndex) SwitchToMainIndex() {
+	os.Remove(filepath.Join(basePath, consts.IndexFile))
+	os.Rename(filepath.Join(basePath, consts.TempIndexFile), filepath.Join(basePath, consts.IndexFile))
+	os.Remove(filepath.Join(basePath, consts.TempIndexFile))
 }
 
 func construcIndexFromStore(f *os.File) map[string]int64 {

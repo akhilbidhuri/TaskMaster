@@ -196,6 +196,10 @@ func (fs *FileStore) AddTask(task *models.Task) *models.Task {
 }
 
 func (fs *FileStore) RemoveTask(id string) bool {
+	if err := fs.index.Remove(id); err != nil {
+		log.Fatal("Task couldn't be removed", err)
+	}
+	log.Println("Removed task successfully:", id)
 	return true
 }
 
@@ -249,6 +253,35 @@ func (fs *FileStore) MarkTaskDone(id string) bool {
 	}
 	log.Println("Marked task as done!", task.ID, task.Title)
 	return true
+}
+
+func (fs *FileStore) CleanUp() {
+	seekStart(fs.F)
+	tempIndex := getTempNdJSONIndex(filepath.Join(basePath, consts.TempIndexFile))
+	var tasks = make([]models.Task, 0)
+	reader := bufio.NewScanner(fs.F)
+	for reader.Scan() {
+		taskMarshalled := reader.Bytes()
+		var task models.Task
+		json.Unmarshal([]byte(taskMarshalled), &task)
+		if task.Status != consts.DONE && fs.TaskExists(task.ID) {
+			tasks = append(tasks, task)
+		}
+	}
+	seekStart(fs.F)
+	fs.F.Truncate(0)
+	fs.F.Sync()
+	for _, task := range tasks {
+		offset, _ := fs.F.Seek(0, io.SeekEnd)
+		taskJson, err := json.Marshal(task)
+		if err != nil {
+			log.Fatal("Failed to marshal task during cleanup!, ", err)
+		}
+		fs.F.Write(append(taskJson, byte('\n')))
+		tempIndex.Add(task.ID, offset)
+	}
+	tempIndex.SwitchToMainIndex()
+	log.Println("Cleaning done successfully!")
 }
 
 func seekStart(f *os.File) {

@@ -73,6 +73,15 @@ func (c *Controller) HandleRequest() {
 			log.Fatal("Task dosen't exit!")
 		}
 		(*c.repo).MarkTaskDone(id)
+	case consts.DELETE:
+		flag.Parse()
+		id := consts.Remove
+		if !(*c.repo).TaskExists(id) {
+			log.Fatal("Task dosen't exit!")
+		}
+		(*c.repo).RemoveTask(id)
+	case consts.CLEAN:
+		(*c.repo).CleanUp()
 	default:
 	}
 }

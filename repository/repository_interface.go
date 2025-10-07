@@ -10,6 +10,7 @@ type RepositoryI interface {
 	ModifyTask(*models.Task) *models.Task
 	MarkTaskDone(id string) bool
 	TaskExists(id string) bool
+	CleanUp()
 }
 
 type Index interface {
